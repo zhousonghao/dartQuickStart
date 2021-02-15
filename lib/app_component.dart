@@ -23,4 +23,5 @@ import 'src/hero_service.dart';
 )
 class AppComponent {
   final title = 'Tour of Heroes';
+  String name = ''; //fix test erro
 }

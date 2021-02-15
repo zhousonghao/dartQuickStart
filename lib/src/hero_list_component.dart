@@ -1,38 +1,52 @@
-import 'package:angular/angular.dart';
-import 'package:angular_forms/angular_forms.dart';
-import 'hero.dart';
-import 'mock_heroes.dart';
-import 'hero_service.dart';
 import 'dart:async';
+import 'dart:html';
+
+import 'package:angular/angular.dart';
 import 'package:angular_router/angular_router.dart';
+
 import 'route_paths.dart';
+import 'hero.dart';
+import 'hero_component.dart';
+import 'hero_service.dart';
 
 @Component(
   selector: 'my-heroes',
-  styleUrls: ['hero_list_component.css'],
   templateUrl: 'hero_list_component.html',
-  directives: [
-    coreDirectives,
-    formDirectives,
-  ],
+  styleUrls: ['hero_list_component.css'],
+  directives: [coreDirectives, HeroComponent],
   pipes: [commonPipes],
 )
-class HeroListComponent {
+class HeroListComponent implements OnInit {
   final title = 'Tour of Heroes';
   final HeroService _heroService;
   final Router _router;
-
+  List<Hero> heroes;
   Hero selected;
-  List<Hero> heroes = mockHeroes;
+
   HeroListComponent(this._heroService, this._router);
-
-  void ngOnInit() => _getHeroes();
-
-  void onSelect(Hero hero) => selected = hero;
 
   Future<void> _getHeroes() async {
     heroes = await _heroService.getAll();
   }
+
+  Future<void> add(String name) async {
+    name = name.trim();
+    if (name.isEmpty) return null;
+    heroes.add(await _heroService.create(name));
+    selected = null;
+  }
+
+  Future<void> delete(Hero hero, Event event) async {
+    await _heroService.delete(hero.id);
+    heroes.remove(hero);
+    if (selected == hero) selected = null;
+
+    event.stopPropagation();
+  }
+
+  void ngOnInit() => _getHeroes();
+
+  void onSelect(Hero hero) => selected = hero;
 
   String _heroUrl(int id) =>
       RoutePaths.hero.toUrl(parameters: {idParam: '$id'});
